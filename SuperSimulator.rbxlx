@@ -1,0 +1,505 @@
+<roblox version="4">
+  <Item class="ReplicatedStorage" referent="0">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="Folder" referent="1">
+      <Properties>
+        <string name="Name">Events</string>
+      </Properties>
+      <Item class="RemoteEvent" referent="2">
+        <Properties>
+          <string name="Name">ClickEvent</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="3">
+        <Properties>
+          <string name="Name">RebirthEvent</string>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Folder" referent="4">
+      <Properties>
+        <string name="Name">Shared</string>
+      </Properties>
+      <Item class="ModuleScript" referent="5">
+        <Properties>
+          <string name="Name">Constants</string>
+          <string name="Source"><![CDATA[local Constants = {
+	INITIAL_POWER = 0,
+	INITIAL_COINS = 0,
+	INITIAL_REBIRTHS = 0,
+
+	CLICK_POWER_GAIN = 1,
+
+	REBIRTH_COST_BASE = 1000,
+	REBIRTH_COST_MULTIPLIER = 2.5,
+
+	UPGRADE_COST_BASE = 100,
+	UPGRADE_COST_MULTIPLIER = 1.5,
+
+	MARKETPLACE = {
+		DOUBLE_COINS_ID = 1234567, -- Placeholder
+		BUY_COINS_ID = 7654321,   -- Placeholder
+	}
+}
+
+return Constants
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="6">
+        <Properties>
+          <string name="Name">Hello</string>
+          <string name="Source"><![CDATA[return function()
+	print("Hello, world!")
+end
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="7">
+        <Properties>
+          <string name="Name">Utils</string>
+          <string name="Source"><![CDATA[local Utils = {}
+
+local SUFFIXES = {"", "k", "M", "B", "T", "Q"}
+
+function Utils.formatNumber(n: number): string
+	if n < 1000 then
+		return tostring(n)
+	end
+
+	local index = math.floor(math.log10(n) / 3)
+	local suffix = SUFFIXES[index + 1] or "e" .. tostring(index * 3)
+
+	local value = n / (10 ^ (index * 3))
+	return string.format("%.1f%s", value, suffix)
+end
+
+return Utils
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="8">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="Script" referent="9">
+      <Properties>
+        <string name="Name">Server</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Leaderstats = require(script.Leaderstats)
+local GameService = require(script.GameService)
+local MarketplaceManager = require(script.MarketplaceManager)
+
+local Events = ReplicatedStorage:WaitForChild("Events")
+local ClickEvent = Events:WaitForChild("ClickEvent")
+local RebirthEvent = Events:WaitForChild("RebirthEvent")
+
+Players.PlayerAdded:Connect(function(player)
+	Leaderstats.initialize(player)
+end)
+
+ClickEvent.OnServerEvent:Connect(function(player)
+	GameService.handleClick(player)
+end)
+
+RebirthEvent.OnServerEvent:Connect(function(player)
+	GameService.handleRebirth(player)
+end)
+
+-- Sell part logic
+local Workspace = game:GetService("Workspace")
+local SellPart = Workspace:WaitForChild("SellPart")
+
+SellPart.Touched:Connect(function(hit)
+	local character = hit.Parent
+	local player = Players:GetPlayerFromCharacter(character)
+	if player then
+		GameService.handleSell(player)
+	end
+end)
+
+print("Server initialized.")
+]]></string>
+      </Properties>
+      <Item class="ModuleScript" referent="10">
+        <Properties>
+          <string name="Name">DataManager</string>
+          <string name="Source"><![CDATA[local DataStoreService = game:GetService("DataStoreService")
+local PlayerDataStore = DataStoreService:GetDataStore("PlayerData_v1")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Constants = require(ReplicatedStorage.Shared.Constants)
+
+local DataManager = {}
+local sessionData = {}
+
+function DataManager.loadData(player)
+	local success, result = pcall(function()
+		return PlayerDataStore:GetAsync(tostring(player.UserId))
+	end)
+
+	if success then
+		sessionData[player.UserId] = result or {
+			Power = Constants.INITIAL_POWER,
+			Coins = Constants.INITIAL_COINS,
+			Rebirths = Constants.INITIAL_REBIRTHS
+		}
+		return sessionData[player.UserId]
+	else
+		warn("Failed to load data for player " .. player.Name .. ": " .. tostring(result))
+		return nil
+	end
+end
+
+function DataManager.saveData(player)
+	if sessionData[player.UserId] then
+		local success, result = pcall(function()
+			PlayerDataStore:UpdateAsync(tostring(player.UserId), function(oldData)
+				return sessionData[player.UserId]
+			end)
+		end)
+		if not success then
+			warn("Failed to save data for player " .. player.Name .. ": " .. tostring(result))
+		end
+	end
+end
+
+game:BindToClose(function()
+	for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+		DataManager.saveData(player)
+	end
+end)
+
+function DataManager.get(player, key)
+	if sessionData[player.UserId] then
+		return sessionData[player.UserId][key]
+	end
+end
+
+function DataManager.set(player, key, value)
+	if sessionData[player.UserId] then
+		sessionData[player.UserId][key] = value
+	end
+end
+
+function DataManager.increment(player, key, amount)
+	if sessionData[player.UserId] then
+		sessionData[player.UserId][key] = (sessionData[player.UserId][key] or 0) + amount
+	end
+end
+
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+	DataManager.saveData(player)
+	sessionData[player.UserId] = nil
+end)
+
+return DataManager
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="11">
+        <Properties>
+          <string name="Name">GameService</string>
+          <string name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DataManager = require(script.Parent.DataManager)
+local Leaderstats = require(script.Parent.Leaderstats)
+local Constants = require(ReplicatedStorage.Shared.Constants)
+
+local GameService = {}
+
+function GameService.handleClick(player)
+	local rebirths = DataManager.get(player, "Rebirths") or 0
+	local gain = Constants.CLICK_POWER_GAIN * (rebirths + 1)
+
+	DataManager.increment(player, "Power", gain)
+	Leaderstats.update(player, "Power", DataManager.get(player, "Power"))
+end
+
+function GameService.handleSell(player)
+	local power = DataManager.get(player, "Power") or 0
+	if power > 0 then
+		local rebirths = DataManager.get(player, "Rebirths") or 0
+		local multiplier = 1 -- Can be influenced by gamepasses
+
+		-- Check for marketplace influence (simple placeholder check)
+		-- if MarketplaceManager.hasDoubleCoins(player) then multiplier = 2 end
+
+		local coinsGain = power * multiplier
+		DataManager.increment(player, "Coins", coinsGain)
+		DataManager.set(player, "Power", 0)
+
+		Leaderstats.update(player, "Coins", DataManager.get(player, "Coins"))
+		Leaderstats.update(player, "Power", 0)
+	end
+end
+
+function GameService.handleRebirth(player)
+	local rebirths = DataManager.get(player, "Rebirths") or 0
+	local cost = Constants.REBIRTH_COST_BASE * (Constants.REBIRTH_COST_MULTIPLIER ^ rebirths)
+	local coins = DataManager.get(player, "Coins") or 0
+
+	if coins >= cost then
+		DataManager.increment(player, "Coins", -cost)
+		DataManager.increment(player, "Rebirths", 1)
+		DataManager.set(player, "Power", 0)
+
+		Leaderstats.update(player, "Coins", DataManager.get(player, "Coins"))
+		Leaderstats.update(player, "Rebirths", DataManager.get(player, "Rebirths"))
+		Leaderstats.update(player, "Power", 0)
+	end
+end
+
+return GameService
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="12">
+        <Properties>
+          <string name="Name">Leaderstats</string>
+          <string name="Source"><![CDATA[local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DataManager = require(script.Parent.DataManager)
+
+local Leaderstats = {}
+
+function Leaderstats.initialize(player)
+	local data = DataManager.loadData(player)
+	if not data then
+		player:Kick("Data failed to load. Please rejoin.")
+		return
+	end
+
+	local leaderstats = Instance.new("Folder")
+	leaderstats.Name = "leaderstats"
+	leaderstats.Parent = player
+
+	local coins = Instance.new("IntValue")
+	coins.Name = "Coins"
+	coins.Value = data.Coins
+	coins.Parent = leaderstats
+
+	local power = Instance.new("IntValue")
+	power.Name = "Power"
+	power.Value = data.Power
+	power.Parent = leaderstats
+
+	local rebirths = Instance.new("IntValue")
+	rebirths.Name = "Rebirths"
+	rebirths.Value = data.Rebirths
+	rebirths.Parent = leaderstats
+end
+
+function Leaderstats.update(player, key, value)
+	local leaderstats = player:FindFirstChild("leaderstats")
+	if leaderstats then
+		local stat = leaderstats:FindFirstChild(key)
+		if stat then
+			stat.Value = value
+		end
+	end
+end
+
+return Leaderstats
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="13">
+        <Properties>
+          <string name="Name">MarketplaceManager</string>
+          <string name="Source"><![CDATA[local MarketplaceService = game:GetService("MarketplaceService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Constants = require(ReplicatedStorage.Shared.Constants)
+local DataManager = require(script.Parent.DataManager)
+local Leaderstats = require(script.Parent.Leaderstats)
+
+local MarketplaceManager = {}
+
+function MarketplaceManager.hasPass(player, passId)
+	local success, result = pcall(function()
+		return MarketplaceService:UserOwnsGamePassAsync(player.UserId, passId)
+	end)
+	return success and result
+end
+
+-- Example of handling a Developer Product (Buy Coins)
+function MarketplaceManager.processReceipt(receiptInfo)
+	local player = game:GetService("Players"):GetPlayerByUserId(receiptInfo.PlayerId)
+	if not player then return Enum.ProductPurchaseDecision.NotProcessedYet end
+
+	if receiptInfo.ProductId == Constants.MARKETPLACE.BUY_COINS_ID then
+		DataManager.increment(player, "Coins", 1000)
+		Leaderstats.update(player, "Coins", DataManager.get(player, "Coins"))
+		return Enum.ProductPurchaseDecision.PurchaseGranted
+	end
+
+	return Enum.ProductPurchaseDecision.NotProcessedYet
+end
+
+MarketplaceService.ProcessReceipt = MarketplaceManager.processReceipt
+
+return MarketplaceManager
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="StarterGui" referent="14">
+    <Properties>
+      <string name="Name">StarterGui</string>
+    </Properties>
+    <Item class="ScreenGui" referent="15">
+      <Properties>
+        <string name="Name">MainHUD</string>
+      </Properties>
+      <Item class="TextButton" referent="16">
+        <Properties>
+          <string name="Name">ClickButton</string>
+          <string name="Text">CLICK ME!</string>
+        </Properties>
+      </Item>
+      <Item class="Frame" referent="17">
+        <Properties>
+          <string name="Name">HUDFrame</string>
+        </Properties>
+        <Item class="TextLabel" referent="18">
+          <Properties>
+            <string name="Name">CoinsLabel</string>
+            <string name="Text">Coins: 0</string>
+          </Properties>
+        </Item>
+        <Item class="TextLabel" referent="19">
+          <Properties>
+            <string name="Name">PowerLabel</string>
+            <string name="Text">Power: 0</string>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="TextButton" referent="20">
+        <Properties>
+          <string name="Name">RebirthButton</string>
+          <string name="Text">REBIRTH</string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="StarterPlayer" referent="21">
+    <Properties>
+      <string name="Name">StarterPlayer</string>
+    </Properties>
+    <Item class="StarterPlayerScripts" referent="22">
+      <Properties>
+        <string name="Name">StarterPlayerScripts</string>
+      </Properties>
+      <Item class="LocalScript" referent="23">
+        <Properties>
+          <string name="Name">Client</string>
+          <string name="Source"><![CDATA[local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HUD = require(script.HUD)
+
+local Events = ReplicatedStorage:WaitForChild("Events")
+local ClickEvent = Events:WaitForChild("ClickEvent")
+local RebirthEvent = Events:WaitForChild("RebirthEvent")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local mainHUD = playerGui:WaitForChild("MainHUD")
+
+local clickButton = mainHUD:WaitForChild("ClickButton")
+local rebirthButton = mainHUD:WaitForChild("RebirthButton")
+
+HUD.init()
+
+clickButton.MouseButton1Click:Connect(function()
+	ClickEvent:FireServer()
+end)
+
+rebirthButton.MouseButton1Click:Connect(function()
+	RebirthEvent:FireServer()
+end)
+
+print("Client initialized.")
+]]></string>
+        </Properties>
+        <Item class="ModuleScript" referent="24">
+          <Properties>
+            <string name="Name">HUD</string>
+            <string name="Source"><![CDATA[local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utils = require(ReplicatedStorage.Shared.Utils)
+local HUD = {}
+
+function HUD.init()
+	local playerGui = player:WaitForChild("PlayerGui")
+	local mainHUD = playerGui:WaitForChild("MainHUD")
+	local hudFrame = mainHUD:WaitForChild("HUDFrame")
+	local powerLabel = hudFrame:WaitForChild("PowerLabel")
+	local coinsLabel = hudFrame:WaitForChild("CoinsLabel")
+
+	local leaderstats = player:WaitForChild("leaderstats")
+	local powerStat = leaderstats:WaitForChild("Power")
+	local coinsStat = leaderstats:WaitForChild("Coins")
+
+	local function update()
+		powerLabel.Text = "Power: " .. Utils.formatNumber(powerStat.Value)
+		coinsLabel.Text = "Coins: " .. Utils.formatNumber(coinsStat.Value)
+	end
+
+	powerStat.Changed:Connect(update)
+	coinsStat.Changed:Connect(update)
+	update()
+end
+
+return HUD
+]]></string>
+          </Properties>
+        </Item>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="Workspace" referent="25">
+    <Properties>
+      <string name="Name">Workspace</string>
+      <bool name="NeedsPivotMigration">false</bool>
+    </Properties>
+    <Item class="Part" referent="26">
+      <Properties>
+        <string name="Name">Baseplate</string>
+        <bool name="Anchored">true</bool>
+        <Vector3 name="Position">
+          <X>0</X>
+          <Y>-1</Y>
+          <Z>0</Z>
+        </Vector3>
+        <Vector3 name="size">
+          <X>512</X>
+          <Y>2</Y>
+          <Z>512</Z>
+        </Vector3>
+      </Properties>
+    </Item>
+    <Item class="Part" referent="27">
+      <Properties>
+        <string name="Name">SellPart</string>
+        <bool name="Anchored">true</bool>
+        <Vector3 name="Position">
+          <X>20</X>
+          <Y>0</Y>
+          <Z>20</Z>
+        </Vector3>
+        <Vector3 name="size">
+          <X>10</X>
+          <Y>1</Y>
+          <Z>10</Z>
+        </Vector3>
+      </Properties>
+    </Item>
+  </Item>
+</roblox>
