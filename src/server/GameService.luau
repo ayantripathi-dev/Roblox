@@ -1,15 +1,21 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataManager = require(script.Parent.DataManager)
 local Leaderstats = require(script.Parent.Leaderstats)
+local PetService = require(script.Parent.PetService)
 local Constants = require(ReplicatedStorage.Shared.Constants)
+local Upgrades = require(ReplicatedStorage.Shared.Upgrades)
 
 local GameService = {}
 
 function GameService.handleClick(player)
 	local rebirths = DataManager.get(player, "Rebirths") or 0
-	local gain = Constants.CLICK_POWER_GAIN * (rebirths + 1)
+	local upgradeLevel = (DataManager.get(player, "Upgrades") or {Power = 1}).Power
+	local upgradeMult = Upgrades.Power[upgradeLevel].Multiplier
+	local petMult = PetService.getEquippedMultiplier(player)
 
-	DataManager.increment(player, "Power", gain)
+	local gain = Constants.CLICK_POWER_GAIN * (rebirths + 1) * upgradeMult * petMult
+
+	DataManager.increment(player, "Power", math.floor(gain))
 	Leaderstats.update(player, "Power", DataManager.get(player, "Power"))
 end
 
@@ -17,13 +23,14 @@ function GameService.handleSell(player)
 	local power = DataManager.get(player, "Power") or 0
 	if power > 0 then
 		local rebirths = DataManager.get(player, "Rebirths") or 0
-		local multiplier = 1 -- Can be influenced by gamepasses
+		local upgradeLevel = (DataManager.get(player, "Upgrades") or {Coins = 1}).Coins
+		local upgradeMult = Upgrades.Coins[upgradeLevel].Multiplier
+		local petMult = PetService.getEquippedMultiplier(player)
 
-		-- Check for marketplace influence (simple placeholder check)
-		-- if MarketplaceManager.hasDoubleCoins(player) then multiplier = 2 end
+		local multiplier = upgradeMult * petMult
 
 		local coinsGain = power * multiplier
-		DataManager.increment(player, "Coins", coinsGain)
+		DataManager.increment(player, "Coins", math.floor(coinsGain))
 		DataManager.set(player, "Power", 0)
 
 		Leaderstats.update(player, "Coins", DataManager.get(player, "Coins"))

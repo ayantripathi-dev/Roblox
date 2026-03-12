@@ -15,7 +15,10 @@ function DataManager.loadData(player)
 		sessionData[player.UserId] = result or {
 			Power = Constants.INITIAL_POWER,
 			Coins = Constants.INITIAL_COINS,
-			Rebirths = Constants.INITIAL_REBIRTHS
+			Rebirths = Constants.INITIAL_REBIRTHS,
+			Upgrades = {Power = 1, Coins = 1},
+			Pets = {},
+			EquippedPets = {}
 		}
 		return sessionData[player.UserId]
 	else

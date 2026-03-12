@@ -13,6 +13,12 @@
         },
         "RebirthEvent": {
           "$className": "RemoteEvent"
+        },
+        "UpgradeEvent": {
+          "$className": "RemoteEvent"
+        },
+        "PetHatchEvent": {
+          "$className": "RemoteEvent"
         }
       }
     },
@@ -53,27 +59,30 @@
           "$className": "Frame",
           "PowerLabel": {
             "$className": "TextLabel",
-            "$properties": {
-              "Text": "Power: 0"
-            }
+            "$properties": { "Text": "Power: 0" }
           },
           "CoinsLabel": {
             "$className": "TextLabel",
-            "$properties": {
-              "Text": "Coins: 0"
-            }
+            "$properties": { "Text": "Coins: 0" }
           }
         },
-        "ClickButton": {
-          "$className": "TextButton",
-          "$properties": {
-            "Text": "CLICK ME!"
-          }
-        },
-        "RebirthButton": {
-          "$className": "TextButton",
-          "$properties": {
-            "Text": "REBIRTH"
+        "Buttons": {
+          "$className": "Folder",
+          "ClickButton": {
+            "$className": "TextButton",
+            "$properties": { "Text": "CLICK ME!" }
+          },
+          "RebirthButton": {
+            "$className": "TextButton",
+            "$properties": { "Text": "REBIRTH" }
+          },
+          "UpgradeButton": {
+            "$className": "TextButton",
+            "$properties": { "Text": "UPGRADES" }
+          },
+          "PetButton": {
+            "$className": "TextButton",
+            "$properties": { "Text": "HATCH PET (500)" }
           }
         }
       }

@@ -10,8 +10,11 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local mainHUD = playerGui:WaitForChild("MainHUD")
 
-local clickButton = mainHUD:WaitForChild("ClickButton")
-local rebirthButton = mainHUD:WaitForChild("RebirthButton")
+local buttons = mainHUD:WaitForChild("Buttons")
+local clickButton = buttons:WaitForChild("ClickButton")
+local rebirthButton = buttons:WaitForChild("RebirthButton")
+local upgradeButton = buttons:WaitForChild("UpgradeButton")
+local petButton = buttons:WaitForChild("PetButton")
 
 HUD.init()
 
@@ -21,6 +24,14 @@ end)
 
 rebirthButton.MouseButton1Click:Connect(function()
 	RebirthEvent:FireServer()
+end)
+
+upgradeButton.MouseButton1Click:Connect(function()
+	Events.UpgradeEvent:FireServer("Power") -- Simple toggle for demo
+end)
+
+petButton.MouseButton1Click:Connect(function()
+	Events.PetHatchEvent:FireServer()
 end)
 
 print("Client initialized.")

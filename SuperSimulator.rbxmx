@@ -1,41 +1,45 @@
 <roblox version="4">
-  <Item class="ReplicatedStorage" referent="0">
+  <Item class="DataModel" referent="0">
     <Properties>
-      <string name="Name">ReplicatedStorage</string>
+      <string name="Name">SuperSimulator</string>
     </Properties>
-    <Item class="Folder" referent="1">
+    <Item class="ReplicatedStorage" referent="1">
       <Properties>
-        <string name="Name">Events</string>
+        <string name="Name">ReplicatedStorage</string>
       </Properties>
-      <Item class="RemoteEvent" referent="2">
+      <Item class="Folder" referent="2">
         <Properties>
-          <string name="Name">ClickEvent</string>
+          <string name="Name">Events</string>
         </Properties>
+        <Item class="RemoteEvent" referent="3">
+          <Properties>
+            <string name="Name">ClickEvent</string>
+          </Properties>
+        </Item>
+        <Item class="RemoteEvent" referent="4">
+          <Properties>
+            <string name="Name">PetHatchEvent</string>
+          </Properties>
+        </Item>
+        <Item class="RemoteEvent" referent="5">
+          <Properties>
+            <string name="Name">RebirthEvent</string>
+          </Properties>
+        </Item>
+        <Item class="RemoteEvent" referent="6">
+          <Properties>
+            <string name="Name">UpgradeEvent</string>
+          </Properties>
+        </Item>
       </Item>
-      <Item class="RemoteEvent" referent="3">
+      <Item class="Folder" referent="7">
         <Properties>
-          <string name="Name">PetHatchEvent</string>
+          <string name="Name">Shared</string>
         </Properties>
-      </Item>
-      <Item class="RemoteEvent" referent="4">
-        <Properties>
-          <string name="Name">RebirthEvent</string>
-        </Properties>
-      </Item>
-      <Item class="RemoteEvent" referent="5">
-        <Properties>
-          <string name="Name">UpgradeEvent</string>
-        </Properties>
-      </Item>
-    </Item>
-    <Item class="Folder" referent="6">
-      <Properties>
-        <string name="Name">Shared</string>
-      </Properties>
-      <Item class="ModuleScript" referent="7">
-        <Properties>
-          <string name="Name">Constants</string>
-          <string name="Source"><![CDATA[local Constants = {
+        <Item class="ModuleScript" referent="8">
+          <Properties>
+            <string name="Name">Constants</string>
+            <string name="Source"><![CDATA[local Constants = {
 	INITIAL_POWER = 0,
 	INITIAL_COINS = 0,
 	INITIAL_REBIRTHS = 0,
@@ -56,21 +60,21 @@
 
 return Constants
 ]]></string>
-        </Properties>
-      </Item>
-      <Item class="ModuleScript" referent="8">
-        <Properties>
-          <string name="Name">Hello</string>
-          <string name="Source"><![CDATA[return function()
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="9">
+          <Properties>
+            <string name="Name">Hello</string>
+            <string name="Source"><![CDATA[return function()
 	print("Hello, world!")
 end
 ]]></string>
-        </Properties>
-      </Item>
-      <Item class="ModuleScript" referent="9">
-        <Properties>
-          <string name="Name">Pets</string>
-          <string name="Source"><![CDATA[local Pets = {
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="10">
+          <Properties>
+            <string name="Name">Pets</string>
+            <string name="Source"><![CDATA[local Pets = {
 	Settings = {
 		HatchCost = 500,
 		MaxEquipped = 3
@@ -85,12 +89,12 @@ end
 
 return Pets
 ]]></string>
-        </Properties>
-      </Item>
-      <Item class="ModuleScript" referent="10">
-        <Properties>
-          <string name="Name">Upgrades</string>
-          <string name="Source"><![CDATA[local Upgrades = {
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="11">
+          <Properties>
+            <string name="Name">Upgrades</string>
+            <string name="Source"><![CDATA[local Upgrades = {
 	Power = {
 		{Level = 1, Multiplier = 1, Cost = 0},
 		{Level = 2, Multiplier = 2, Cost = 500},
@@ -107,12 +111,12 @@ return Pets
 
 return Upgrades
 ]]></string>
-        </Properties>
-      </Item>
-      <Item class="ModuleScript" referent="11">
-        <Properties>
-          <string name="Name">Utils</string>
-          <string name="Source"><![CDATA[local Utils = {}
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="12">
+          <Properties>
+            <string name="Name">Utils</string>
+            <string name="Source"><![CDATA[local Utils = {}
 
 local SUFFIXES = {"", "k", "M", "B", "T", "Q"}
 
@@ -130,19 +134,19 @@ end
 
 return Utils
 ]]></string>
-        </Properties>
+          </Properties>
+        </Item>
       </Item>
     </Item>
-  </Item>
-  <Item class="ServerScriptService" referent="12">
-    <Properties>
-      <string name="Name">ServerScriptService</string>
-    </Properties>
-    <Item class="Script" referent="13">
+    <Item class="ServerScriptService" referent="13">
       <Properties>
-        <string name="Name">Server</string>
-        <token name="RunContext">0</token>
-        <string name="Source"><![CDATA[local Players = game:GetService("Players")
+        <string name="Name">ServerScriptService</string>
+      </Properties>
+      <Item class="Script" referent="14">
+        <Properties>
+          <string name="Name">Server</string>
+          <token name="RunContext">0</token>
+          <string name="Source"><![CDATA[local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Leaderstats = require(script.Leaderstats)
@@ -206,11 +210,11 @@ end)
 
 print("Server initialized.")
 ]]></string>
-      </Properties>
-      <Item class="ModuleScript" referent="14">
-        <Properties>
-          <string name="Name">DataManager</string>
-          <string name="Source"><![CDATA[local DataStoreService = game:GetService("DataStoreService")
+        </Properties>
+        <Item class="ModuleScript" referent="15">
+          <Properties>
+            <string name="Name">DataManager</string>
+            <string name="Source"><![CDATA[local DataStoreService = game:GetService("DataStoreService")
 local PlayerDataStore = DataStoreService:GetDataStore("PlayerData_v1")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Constants = require(ReplicatedStorage.Shared.Constants)
@@ -283,12 +287,12 @@ end)
 
 return DataManager
 ]]></string>
-        </Properties>
-      </Item>
-      <Item class="ModuleScript" referent="15">
-        <Properties>
-          <string name="Name">GameService</string>
-          <string name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="16">
+          <Properties>
+            <string name="Name">GameService</string>
+            <string name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataManager = require(script.Parent.DataManager)
 local Leaderstats = require(script.Parent.Leaderstats)
 local PetService = require(script.Parent.PetService)
@@ -346,12 +350,12 @@ end
 
 return GameService
 ]]></string>
-        </Properties>
-      </Item>
-      <Item class="ModuleScript" referent="16">
-        <Properties>
-          <string name="Name">Leaderstats</string>
-          <string name="Source"><![CDATA[local Players = game:GetService("Players")
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="17">
+          <Properties>
+            <string name="Name">Leaderstats</string>
+            <string name="Source"><![CDATA[local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataManager = require(script.Parent.DataManager)
 
@@ -396,12 +400,12 @@ end
 
 return Leaderstats
 ]]></string>
-        </Properties>
-      </Item>
-      <Item class="ModuleScript" referent="17">
-        <Properties>
-          <string name="Name">MarketplaceManager</string>
-          <string name="Source"><![CDATA[local MarketplaceService = game:GetService("MarketplaceService")
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="18">
+          <Properties>
+            <string name="Name">MarketplaceManager</string>
+            <string name="Source"><![CDATA[local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local DataManager = require(script.Parent.DataManager)
@@ -434,12 +438,12 @@ MarketplaceService.ProcessReceipt = MarketplaceManager.processReceipt
 
 return MarketplaceManager
 ]]></string>
-        </Properties>
-      </Item>
-      <Item class="ModuleScript" referent="18">
-        <Properties>
-          <string name="Name">PetService</string>
-          <string name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="19">
+          <Properties>
+            <string name="Name">PetService</string>
+            <string name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataManager = require(script.Parent.DataManager)
 local PetsConfig = require(ReplicatedStorage.Shared.Pets)
 local HttpService = game:GetService("HttpService")
@@ -500,78 +504,78 @@ end
 
 return PetService
 ]]></string>
-        </Properties>
-      </Item>
-    </Item>
-  </Item>
-  <Item class="StarterGui" referent="19">
-    <Properties>
-      <string name="Name">StarterGui</string>
-    </Properties>
-    <Item class="ScreenGui" referent="20">
-      <Properties>
-        <string name="Name">MainHUD</string>
-      </Properties>
-      <Item class="Folder" referent="21">
-        <Properties>
-          <string name="Name">Buttons</string>
-        </Properties>
-        <Item class="TextButton" referent="22">
-          <Properties>
-            <string name="Name">ClickButton</string>
-            <string name="Text">CLICK ME!</string>
-          </Properties>
-        </Item>
-        <Item class="TextButton" referent="23">
-          <Properties>
-            <string name="Name">PetButton</string>
-            <string name="Text">HATCH PET (500)</string>
-          </Properties>
-        </Item>
-        <Item class="TextButton" referent="24">
-          <Properties>
-            <string name="Name">RebirthButton</string>
-            <string name="Text">REBIRTH</string>
-          </Properties>
-        </Item>
-        <Item class="TextButton" referent="25">
-          <Properties>
-            <string name="Name">UpgradeButton</string>
-            <string name="Text">UPGRADES</string>
-          </Properties>
-        </Item>
-      </Item>
-      <Item class="Frame" referent="26">
-        <Properties>
-          <string name="Name">HUDFrame</string>
-        </Properties>
-        <Item class="TextLabel" referent="27">
-          <Properties>
-            <string name="Name">CoinsLabel</string>
-            <string name="Text">Coins: 0</string>
-          </Properties>
-        </Item>
-        <Item class="TextLabel" referent="28">
-          <Properties>
-            <string name="Name">PowerLabel</string>
-            <string name="Text">Power: 0</string>
           </Properties>
         </Item>
       </Item>
     </Item>
-  </Item>
-  <Item class="StarterPlayer" referent="29">
-    <Properties>
-      <string name="Name">StarterPlayer</string>
-    </Properties>
-    <Item class="StarterPlayerScripts" referent="30">
+    <Item class="StarterGui" referent="20">
       <Properties>
-        <string name="Name">StarterPlayerScripts</string>
+        <string name="Name">StarterGui</string>
       </Properties>
-      <Item class="LocalScript" referent="31">
+      <Item class="ScreenGui" referent="21">
         <Properties>
-          <string name="Name">Client</string>
-          <string name="Source"><![CDATA[local Players = game:GetService("Players")
+          <string name="Name">MainHUD</string>
+        </Properties>
+        <Item class="Folder" referent="22">
+          <Properties>
+            <string name="Name">Buttons</string>
+          </Properties>
+          <Item class="TextButton" referent="23">
+            <Properties>
+              <string name="Name">ClickButton</string>
+              <string name="Text">CLICK ME!</string>
+            </Properties>
+          </Item>
+          <Item class="TextButton" referent="24">
+            <Properties>
+              <string name="Name">PetButton</string>
+              <string name="Text">HATCH PET (500)</string>
+            </Properties>
+          </Item>
+          <Item class="TextButton" referent="25">
+            <Properties>
+              <string name="Name">RebirthButton</string>
+              <string name="Text">REBIRTH</string>
+            </Properties>
+          </Item>
+          <Item class="TextButton" referent="26">
+            <Properties>
+              <string name="Name">UpgradeButton</string>
+              <string name="Text">UPGRADES</string>
+            </Properties>
+          </Item>
+        </Item>
+        <Item class="Frame" referent="27">
+          <Properties>
+            <string name="Name">HUDFrame</string>
+          </Properties>
+          <Item class="TextLabel" referent="28">
+            <Properties>
+              <string name="Name">CoinsLabel</string>
+              <string name="Text">Coins: 0</string>
+            </Properties>
+          </Item>
+          <Item class="TextLabel" referent="29">
+            <Properties>
+              <string name="Name">PowerLabel</string>
+              <string name="Text">Power: 0</string>
+            </Properties>
+          </Item>
+        </Item>
+      </Item>
+    </Item>
+    <Item class="StarterPlayer" referent="30">
+      <Properties>
+        <string name="Name">StarterPlayer</string>
+      </Properties>
+      <Item class="StarterPlayerScripts" referent="31">
+        <Properties>
+          <string name="Name">StarterPlayerScripts</string>
+        </Properties>
+        <Item class="LocalScript" referent="32">
+          <Properties>
+            <string name="Name">Client</string>
+            <string name="Source"><![CDATA[local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HUD = require(script.HUD)
 
@@ -609,11 +613,11 @@ end)
 
 print("Client initialized.")
 ]]></string>
-        </Properties>
-        <Item class="ModuleScript" referent="32">
-          <Properties>
-            <string name="Name">HUD</string>
-            <string name="Source"><![CDATA[local Players = game:GetService("Players")
+          </Properties>
+          <Item class="ModuleScript" referent="33">
+            <Properties>
+              <string name="Name">HUD</string>
+              <string name="Source"><![CDATA[local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Utils = require(ReplicatedStorage.Shared.Utils)
@@ -642,47 +646,48 @@ end
 
 return HUD
 ]]></string>
-          </Properties>
+            </Properties>
+          </Item>
         </Item>
       </Item>
     </Item>
-  </Item>
-  <Item class="Workspace" referent="33">
-    <Properties>
-      <string name="Name">Workspace</string>
-      <bool name="NeedsPivotMigration">false</bool>
-    </Properties>
-    <Item class="Part" referent="34">
+    <Item class="Workspace" referent="34">
       <Properties>
-        <string name="Name">Baseplate</string>
-        <bool name="Anchored">true</bool>
-        <Vector3 name="Position">
-          <X>0</X>
-          <Y>-1</Y>
-          <Z>0</Z>
-        </Vector3>
-        <Vector3 name="size">
-          <X>512</X>
-          <Y>2</Y>
-          <Z>512</Z>
-        </Vector3>
+        <string name="Name">Workspace</string>
+        <bool name="NeedsPivotMigration">false</bool>
       </Properties>
-    </Item>
-    <Item class="Part" referent="35">
-      <Properties>
-        <string name="Name">SellPart</string>
-        <bool name="Anchored">true</bool>
-        <Vector3 name="Position">
-          <X>20</X>
-          <Y>0</Y>
-          <Z>20</Z>
-        </Vector3>
-        <Vector3 name="size">
-          <X>10</X>
-          <Y>1</Y>
-          <Z>10</Z>
-        </Vector3>
-      </Properties>
+      <Item class="Part" referent="35">
+        <Properties>
+          <string name="Name">Baseplate</string>
+          <bool name="Anchored">true</bool>
+          <Vector3 name="Position">
+            <X>0</X>
+            <Y>-1</Y>
+            <Z>0</Z>
+          </Vector3>
+          <Vector3 name="size">
+            <X>512</X>
+            <Y>2</Y>
+            <Z>512</Z>
+          </Vector3>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="36">
+        <Properties>
+          <string name="Name">SellPart</string>
+          <bool name="Anchored">true</bool>
+          <Vector3 name="Position">
+            <X>20</X>
+            <Y>0</Y>
+            <Z>20</Z>
+          </Vector3>
+          <Vector3 name="size">
+            <X>10</X>
+            <Y>1</Y>
+            <Z>10</Z>
+          </Vector3>
+        </Properties>
+      </Item>
     </Item>
   </Item>
 </roblox>
