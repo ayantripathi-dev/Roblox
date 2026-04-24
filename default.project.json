@@ -17,7 +17,16 @@
         "UpgradeEvent": {
           "$className": "RemoteEvent"
         },
-        "PetHatchEvent": {
+        "PetEquipEvent": {
+          "$className": "RemoteEvent"
+        },
+        "RequestDataEvent": {
+          "$className": "RemoteEvent"
+        },
+        "PetHatchFunction": {
+          "$className": "RemoteFunction"
+        },
+        "UnlockZoneEvent": {
           "$className": "RemoteEvent"
         }
       }
@@ -48,7 +57,75 @@
         "$properties": {
           "Size": [10, 1, 10],
           "Position": [20, 0, 20],
-          "Anchored": true
+          "Anchored": true,
+          "Color": [255, 0, 0]
+        },
+        "BillboardGui": {
+          "$className": "BillboardGui",
+          "Label": {
+            "$className": "TextLabel",
+            "$properties": {
+              "Text": "SELL"
+            }
+          }
+        }
+      },
+      "HatchArea": {
+        "$className": "Part",
+        "$properties": {
+          "Size": [10, 1, 10],
+          "Position": [-20, 0, -20],
+          "Anchored": true,
+          "Color": [0, 255, 0]
+        },
+        "BillboardGui": {
+          "$className": "BillboardGui",
+          "Label": {
+            "$className": "TextLabel",
+            "$properties": {
+              "Text": "BASIC EGG (500)"
+            }
+          }
+        }
+      },
+      "Zone2": {
+        "$className": "Folder",
+        "Gate": {
+          "$className": "Part",
+          "$properties": {
+            "Size": [20, 20, 2],
+            "Position": [0, 10, 50],
+            "Anchored": true,
+            "Color": [50, 50, 50],
+            "Transparency": 0.5
+          },
+          "BillboardGui": {
+            "$className": "BillboardGui",
+            "Label": {
+              "$className": "TextLabel",
+              "$properties": {
+                "Text": "ZONE 2 - 10,000 COINS"
+              }
+            }
+          }
+        },
+        "GoldEggArea": {
+          "$className": "Part",
+          "$properties": {
+            "Size": [10, 1, 10],
+            "Position": [0, 0, 100],
+            "Anchored": true,
+            "Color": [255, 215, 0]
+          },
+          "BillboardGui": {
+            "$className": "BillboardGui",
+            "Label": {
+              "$className": "TextLabel",
+              "$properties": {
+                "Text": "GOLD EGG (5000)"
+              }
+            }
+          }
         }
       }
     },
@@ -59,30 +136,78 @@
           "$className": "Frame",
           "PowerLabel": {
             "$className": "TextLabel",
-            "$properties": { "Text": "Power: 0" }
+            "$properties": {
+              "Text": "Power: 0"
+            }
           },
           "CoinsLabel": {
             "$className": "TextLabel",
-            "$properties": { "Text": "Coins: 0" }
+            "$properties": {
+              "Text": "Coins: 0"
+            }
           }
         },
         "Buttons": {
           "$className": "Folder",
           "ClickButton": {
             "$className": "TextButton",
-            "$properties": { "Text": "CLICK ME!" }
+            "$properties": {
+              "Text": "CLICK ME!"
+            }
           },
           "RebirthButton": {
             "$className": "TextButton",
-            "$properties": { "Text": "REBIRTH" }
+            "$properties": {
+              "Text": "REBIRTH"
+            }
           },
           "UpgradeButton": {
             "$className": "TextButton",
-            "$properties": { "Text": "UPGRADES" }
+            "$properties": {
+              "Text": "UPGRADES"
+            }
           },
           "PetButton": {
             "$className": "TextButton",
-            "$properties": { "Text": "HATCH PET (500)" }
+            "$properties": {
+              "Text": "PETS"
+            }
+          },
+          "AutoClickToggle": {
+            "$className": "TextButton",
+            "$properties": {
+              "Text": "AUTO: OFF"
+            }
+          }
+        },
+        "PetInventory": {
+          "$className": "Frame",
+          "Title": {
+            "$className": "TextLabel",
+            "$properties": {
+              "Text": "PET INVENTORY"
+            }
+          },
+          "PetList": {
+            "$className": "ScrollingFrame",
+            "UIGridLayout": {
+              "$className": "UIGridLayout"
+            }
+          }
+        },
+        "UpgradeMenu": {
+          "$className": "Frame",
+          "Title": {
+            "$className": "TextLabel",
+            "$properties": {
+              "Text": "UPGRADES"
+            }
+          },
+          "List": {
+            "$className": "ScrollingFrame",
+            "UIListLayout": {
+              "$className": "UIListLayout"
+            }
           }
         }
       }
