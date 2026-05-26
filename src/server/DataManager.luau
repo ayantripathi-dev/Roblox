@@ -18,7 +18,9 @@ function DataManager.loadData(player)
 			Rebirths = Constants.INITIAL_REBIRTHS,
 			Upgrades = {Power = 1, Coins = 1},
 			Pets = {},
-			EquippedPets = {}
+			EquippedPets = {},
+			UnlockedZones = {"Zone 1"},
+			CurrentZone = "Zone 1"
 		}
 		return sessionData[player.UserId]
 	else

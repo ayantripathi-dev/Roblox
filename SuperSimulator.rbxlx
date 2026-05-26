@@ -14,25 +14,45 @@
       </Item>
       <Item class="RemoteEvent" referent="3">
         <Properties>
-          <string name="Name">PetHatchEvent</string>
+          <string name="Name">PetEquippedEvent</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="4">
         <Properties>
-          <string name="Name">RebirthEvent</string>
+          <string name="Name">PetHatchEvent</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="5">
         <Properties>
+          <string name="Name">PowerGainedEvent</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="6">
+        <Properties>
+          <string name="Name">RebirthEvent</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="7">
+        <Properties>
+          <string name="Name">UnlockZoneEvent</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="8">
+        <Properties>
           <string name="Name">UpgradeEvent</string>
         </Properties>
       </Item>
+      <Item class="RemoteEvent" referent="9">
+        <Properties>
+          <string name="Name">ZoneChangedEvent</string>
+        </Properties>
+      </Item>
     </Item>
-    <Item class="Folder" referent="6">
+    <Item class="Folder" referent="10">
       <Properties>
         <string name="Name">Shared</string>
       </Properties>
-      <Item class="ModuleScript" referent="7">
+      <Item class="ModuleScript" referent="11">
         <Properties>
           <string name="Name">Constants</string>
           <string name="Source"><![CDATA[local Constants = {
@@ -58,7 +78,7 @@ return Constants
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="8">
+      <Item class="ModuleScript" referent="12">
         <Properties>
           <string name="Name">Hello</string>
           <string name="Source"><![CDATA[return function()
@@ -67,7 +87,7 @@ end
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="9">
+      <Item class="ModuleScript" referent="13">
         <Properties>
           <string name="Name">Pets</string>
           <string name="Source"><![CDATA[local Pets = {
@@ -87,7 +107,7 @@ return Pets
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="10">
+      <Item class="ModuleScript" referent="14">
         <Properties>
           <string name="Name">Upgrades</string>
           <string name="Source"><![CDATA[local Upgrades = {
@@ -109,7 +129,7 @@ return Upgrades
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="11">
+      <Item class="ModuleScript" referent="15">
         <Properties>
           <string name="Name">Utils</string>
           <string name="Source"><![CDATA[local Utils = {}
@@ -132,13 +152,41 @@ return Utils
 ]]></string>
         </Properties>
       </Item>
+      <Item class="ModuleScript" referent="16">
+        <Properties>
+          <string name="Name">Zones</string>
+          <string name="Source"><![CDATA[local Zones = {
+	{
+		Name = "Zone 1",
+		UnlockCost = 0,
+		Multiplier = 1,
+		Color = Color3.fromRGB(100, 255, 100)
+	},
+	{
+		Name = "Zone 2",
+		UnlockCost = 5000,
+		Multiplier = 2,
+		Color = Color3.fromRGB(100, 100, 255)
+	},
+	{
+		Name = "Zone 3",
+		UnlockCost = 25000,
+		Multiplier = 5,
+		Color = Color3.fromRGB(255, 100, 100)
+	}
+}
+
+return Zones
+]]></string>
+        </Properties>
+      </Item>
     </Item>
   </Item>
-  <Item class="ServerScriptService" referent="12">
+  <Item class="ServerScriptService" referent="17">
     <Properties>
       <string name="Name">ServerScriptService</string>
     </Properties>
-    <Item class="Script" referent="13">
+    <Item class="Script" referent="18">
       <Properties>
         <string name="Name">Server</string>
         <token name="RunContext">0</token>
@@ -207,7 +255,7 @@ end)
 print("Server initialized.")
 ]]></string>
       </Properties>
-      <Item class="ModuleScript" referent="14">
+      <Item class="ModuleScript" referent="19">
         <Properties>
           <string name="Name">DataManager</string>
           <string name="Source"><![CDATA[local DataStoreService = game:GetService("DataStoreService")
@@ -230,7 +278,9 @@ function DataManager.loadData(player)
 			Rebirths = Constants.INITIAL_REBIRTHS,
 			Upgrades = {Power = 1, Coins = 1},
 			Pets = {},
-			EquippedPets = {}
+			EquippedPets = {},
+			UnlockedZones = {"Zone 1"},
+			CurrentZone = "Zone 1"
 		}
 		return sessionData[player.UserId]
 	else
@@ -285,13 +335,14 @@ return DataManager
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="15">
+      <Item class="ModuleScript" referent="20">
         <Properties>
           <string name="Name">GameService</string>
           <string name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataManager = require(script.Parent.DataManager)
 local Leaderstats = require(script.Parent.Leaderstats)
 local PetService = require(script.Parent.PetService)
+local ZoneService = require(script.Parent.ZoneService)
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local Upgrades = require(ReplicatedStorage.Shared.Upgrades)
 
@@ -302,11 +353,15 @@ function GameService.handleClick(player)
 	local upgradeLevel = (DataManager.get(player, "Upgrades") or {Power = 1}).Power
 	local upgradeMult = Upgrades.Power[upgradeLevel].Multiplier
 	local petMult = PetService.getEquippedMultiplier(player)
+	local zoneMult = ZoneService.getMultiplier(player)
 
-	local gain = Constants.CLICK_POWER_GAIN * (rebirths + 1) * upgradeMult * petMult
+	local gain = Constants.CLICK_POWER_GAIN * (rebirths + 1) * upgradeMult * petMult * zoneMult
 
-	DataManager.increment(player, "Power", math.floor(gain))
+	local amount = math.floor(gain)
+	DataManager.increment(player, "Power", amount)
 	Leaderstats.update(player, "Power", DataManager.get(player, "Power"))
+
+	ReplicatedStorage.Events.PowerGainedEvent:FireClient(player, amount)
 end
 
 function GameService.handleSell(player)
@@ -316,8 +371,9 @@ function GameService.handleSell(player)
 		local upgradeLevel = (DataManager.get(player, "Upgrades") or {Coins = 1}).Coins
 		local upgradeMult = Upgrades.Coins[upgradeLevel].Multiplier
 		local petMult = PetService.getEquippedMultiplier(player)
+		local zoneMult = ZoneService.getMultiplier(player)
 
-		local multiplier = upgradeMult * petMult
+		local multiplier = upgradeMult * petMult * zoneMult
 
 		local coinsGain = power * multiplier
 		DataManager.increment(player, "Coins", math.floor(coinsGain))
@@ -348,7 +404,7 @@ return GameService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="16">
+      <Item class="ModuleScript" referent="21">
         <Properties>
           <string name="Name">Leaderstats</string>
           <string name="Source"><![CDATA[local Players = game:GetService("Players")
@@ -398,7 +454,7 @@ return Leaderstats
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="17">
+      <Item class="ModuleScript" referent="22">
         <Properties>
           <string name="Name">MarketplaceManager</string>
           <string name="Source"><![CDATA[local MarketplaceService = game:GetService("MarketplaceService")
@@ -436,7 +492,7 @@ return MarketplaceManager
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="18">
+      <Item class="ModuleScript" referent="23">
         <Properties>
           <string name="Name">PetService</string>
           <string name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -445,6 +501,9 @@ local PetsConfig = require(ReplicatedStorage.Shared.Pets)
 local HttpService = game:GetService("HttpService")
 
 local PetService = {}
+
+local Events = ReplicatedStorage:WaitForChild("Events")
+local PetEquippedEvent = Events:WaitForChild("PetEquippedEvent")
 
 function PetService.hatch(player)
 	local coins = DataManager.get(player, "Coins")
@@ -479,8 +538,52 @@ function PetService.hatch(player)
 			}
 			table.insert(pets, newPet)
 			DataManager.set(player, "Pets", pets)
+
+			-- Auto-equip if space
+			local equipped = DataManager.get(player, "EquippedPets") or {}
+			if #equipped < PetsConfig.Settings.MaxEquipped then
+				PetService.equip(player, newPet.Id)
+			end
+
 			return newPet
 		end
+	end
+end
+
+function PetService.equip(player, petId)
+	local pets = DataManager.get(player, "Pets") or {}
+	local equipped = DataManager.get(player, "EquippedPets") or {}
+
+	local found = false
+	for _, pet in ipairs(pets) do
+		if pet.Id == petId then
+			found = true
+			break
+		end
+	end
+
+	if found then
+		-- Simple logic: if already equipped, unequip. If not, equip if space.
+		local index = table.find(equipped, petId)
+		if index then
+			table.remove(equipped, index)
+		else
+			if #equipped < PetsConfig.Settings.MaxEquipped then
+				table.insert(equipped, petId)
+			end
+		end
+		DataManager.set(player, "EquippedPets", equipped)
+
+		-- Notify client of changes
+		local equippedPetData = {}
+		for _, id in ipairs(equipped) do
+			for _, pet in ipairs(pets) do
+				if pet.Id == id then
+					table.insert(equippedPetData, pet)
+				end
+			end
+		end
+		PetEquippedEvent:FireClient(player, equippedPetData)
 	end
 end
 
@@ -502,56 +605,143 @@ return PetService
 ]]></string>
         </Properties>
       </Item>
+      <Item class="ModuleScript" referent="24">
+        <Properties>
+          <string name="Name">ZoneService</string>
+          <string name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DataManager = require(script.Parent.DataManager)
+local Zones = require(ReplicatedStorage.Shared.Zones)
+
+local ZoneService = {}
+
+local Events = ReplicatedStorage:WaitForChild("Events")
+local UnlockZoneEvent = Events:WaitForChild("UnlockZoneEvent")
+local ZoneChangedEvent = Events:WaitForChild("ZoneChangedEvent")
+
+function ZoneService.unlockNext(player)
+	local unlocked = DataManager.get(player, "UnlockedZones")
+	local nextZoneIndex = #unlocked + 1
+	local nextZone = Zones[nextZoneIndex]
+
+	if nextZone then
+		local coins = DataManager.get(player, "Coins")
+		if coins >= nextZone.UnlockCost then
+			DataManager.increment(player, "Coins", -nextZone.UnlockCost)
+			table.insert(unlocked, nextZone.Name)
+			DataManager.set(player, "UnlockedZones", unlocked)
+
+			-- Automatically move to the new zone
+			ZoneService.setCurrentZone(player, nextZone.Name)
+			ZoneService.updateVisuals(player)
+			return true
+		end
+	end
+	return false
+end
+
+function ZoneService.updateVisuals(player)
+	local unlocked = DataManager.get(player, "UnlockedZones")
+	local hasZone2 = false
+	for _, name in ipairs(unlocked) do
+		if name == "Zone 2" then
+			hasZone2 = true
+			break
+		end
+	end
+
+	if hasZone2 then
+		local gate = workspace:FindFirstChild("Gate")
+		if gate then
+			gate.CanCollide = false
+			gate.Transparency = 1
+		end
+	end
+end
+
+function ZoneService.setCurrentZone(player, zoneName)
+	local unlocked = DataManager.get(player, "UnlockedZones")
+	local isUnlocked = false
+	for _, name in ipairs(unlocked) do
+		if name == zoneName then
+			isUnlocked = true
+			break
+		end
+	end
+
+	if isUnlocked then
+		DataManager.set(player, "CurrentZone", zoneName)
+		ZoneChangedEvent:FireClient(player, zoneName)
+	end
+end
+
+function ZoneService.getMultiplier(player)
+	local currentZoneName = DataManager.get(player, "CurrentZone")
+	for _, zone in ipairs(Zones) do
+		if zone.Name == currentZoneName then
+			return zone.Multiplier
+		end
+	end
+	return 1
+end
+
+UnlockZoneEvent.OnServerEvent:Connect(function(player)
+	ZoneService.unlockNext(player)
+end)
+
+return ZoneService
+]]></string>
+        </Properties>
+      </Item>
     </Item>
   </Item>
-  <Item class="StarterGui" referent="19">
+  <Item class="StarterGui" referent="25">
     <Properties>
       <string name="Name">StarterGui</string>
     </Properties>
-    <Item class="ScreenGui" referent="20">
+    <Item class="ScreenGui" referent="26">
       <Properties>
         <string name="Name">MainHUD</string>
       </Properties>
-      <Item class="Folder" referent="21">
+      <Item class="Folder" referent="27">
         <Properties>
           <string name="Name">Buttons</string>
         </Properties>
-        <Item class="TextButton" referent="22">
+        <Item class="TextButton" referent="28">
           <Properties>
             <string name="Name">ClickButton</string>
             <string name="Text">CLICK ME!</string>
           </Properties>
         </Item>
-        <Item class="TextButton" referent="23">
+        <Item class="TextButton" referent="29">
           <Properties>
             <string name="Name">PetButton</string>
             <string name="Text">HATCH PET (500)</string>
           </Properties>
         </Item>
-        <Item class="TextButton" referent="24">
+        <Item class="TextButton" referent="30">
           <Properties>
             <string name="Name">RebirthButton</string>
             <string name="Text">REBIRTH</string>
           </Properties>
         </Item>
-        <Item class="TextButton" referent="25">
+        <Item class="TextButton" referent="31">
           <Properties>
             <string name="Name">UpgradeButton</string>
             <string name="Text">UPGRADES</string>
           </Properties>
         </Item>
       </Item>
-      <Item class="Frame" referent="26">
+      <Item class="Frame" referent="32">
         <Properties>
           <string name="Name">HUDFrame</string>
         </Properties>
-        <Item class="TextLabel" referent="27">
+        <Item class="TextLabel" referent="33">
           <Properties>
             <string name="Name">CoinsLabel</string>
             <string name="Text">Coins: 0</string>
           </Properties>
         </Item>
-        <Item class="TextLabel" referent="28">
+        <Item class="TextLabel" referent="34">
           <Properties>
             <string name="Name">PowerLabel</string>
             <string name="Text">Power: 0</string>
@@ -560,20 +750,22 @@ return PetService
       </Item>
     </Item>
   </Item>
-  <Item class="StarterPlayer" referent="29">
+  <Item class="StarterPlayer" referent="35">
     <Properties>
       <string name="Name">StarterPlayer</string>
     </Properties>
-    <Item class="StarterPlayerScripts" referent="30">
+    <Item class="StarterPlayerScripts" referent="36">
       <Properties>
         <string name="Name">StarterPlayerScripts</string>
       </Properties>
-      <Item class="LocalScript" referent="31">
+      <Item class="LocalScript" referent="37">
         <Properties>
           <string name="Name">Client</string>
           <string name="Source"><![CDATA[local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HUD = require(script.HUD)
+local PetFollow = require(script.PetFollow)
+local ClickEffect = require(script.ClickEffect)
 
 local Events = ReplicatedStorage:WaitForChild("Events")
 local ClickEvent = Events:WaitForChild("ClickEvent")
@@ -590,9 +782,14 @@ local upgradeButton = buttons:WaitForChild("UpgradeButton")
 local petButton = buttons:WaitForChild("PetButton")
 
 HUD.init()
+PetFollow.init()
 
 clickButton.MouseButton1Click:Connect(function()
 	ClickEvent:FireServer()
+end)
+
+Events:WaitForChild("PowerGainedEvent").OnClientEvent:Connect(function(amount)
+	ClickEffect.create(amount)
 end)
 
 rebirthButton.MouseButton1Click:Connect(function()
@@ -607,10 +804,73 @@ petButton.MouseButton1Click:Connect(function()
 	Events.PetHatchEvent:FireServer()
 end)
 
+local unlockZoneButton = Instance.new("TextButton")
+unlockZoneButton.Name = "UnlockZoneButton"
+unlockZoneButton.Size = UDim2.new(0, 200, 0, 50)
+unlockZoneButton.Position = UDim2.new(0.5, -100, 0, 160)
+unlockZoneButton.Text = "Unlock Next Zone"
+unlockZoneButton.Parent = mainHUD:WaitForChild("HUDFrame")
+
+unlockZoneButton.MouseButton1Click:Connect(function()
+	Events.UnlockZoneEvent:FireServer()
+end)
+
+Events:WaitForChild("PetEquippedEvent").OnClientEvent:Connect(function(equippedPets)
+	PetFollow.updatePets(equippedPets)
+end)
+
 print("Client initialized.")
 ]]></string>
         </Properties>
-        <Item class="ModuleScript" referent="32">
+        <Item class="ModuleScript" referent="38">
+          <Properties>
+            <string name="Name">ClickEffect</string>
+            <string name="Source"><![CDATA[local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+local ClickEffect = {}
+
+function ClickEffect.create(amount)
+	local character = player.Character
+	if not character then return end
+	local rootPart = character:FindFirstChild("HumanoidRootPart")
+	if not rootPart then return end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Size = UDim2.new(2, 0, 1, 0)
+	billboard.Adornee = rootPart
+	billboard.StudsOffset = Vector3.new(math.random(-2, 2), 2, math.random(-2, 2))
+	billboard.Parent = character
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.Text = "+" .. amount
+	label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	label.TextScaled = true
+	label.Font = Enum.Font.GothamBold
+	label.Parent = billboard
+
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+	local tween = TweenService:Create(billboard, tweenInfo, {StudsOffset = billboard.StudsOffset + Vector3.new(0, 3, 0)})
+
+	task.spawn(function()
+		tween:Play()
+		task.wait(0.5)
+		for i = 0, 1, 0.1 do
+			label.TextTransparency = i
+			task.wait(0.05)
+		end
+		billboard:Destroy()
+	end)
+end
+
+return ClickEffect
+]]></string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="39">
           <Properties>
             <string name="Name">HUD</string>
             <string name="Source"><![CDATA[local Players = game:GetService("Players")
@@ -626,6 +886,13 @@ function HUD.init()
 	local powerLabel = hudFrame:WaitForChild("PowerLabel")
 	local coinsLabel = hudFrame:WaitForChild("CoinsLabel")
 
+	local zoneLabel = Instance.new("TextLabel")
+	zoneLabel.Name = "ZoneLabel"
+	zoneLabel.Size = UDim2.new(0, 200, 0, 50)
+	zoneLabel.Position = UDim2.new(0.5, -100, 0, 100)
+	zoneLabel.Text = "Zone: Zone 1"
+	zoneLabel.Parent = hudFrame
+
 	local leaderstats = player:WaitForChild("leaderstats")
 	local powerStat = leaderstats:WaitForChild("Power")
 	local coinsStat = leaderstats:WaitForChild("Coins")
@@ -637,6 +904,11 @@ function HUD.init()
 
 	powerStat.Changed:Connect(update)
 	coinsStat.Changed:Connect(update)
+
+	ReplicatedStorage:WaitForChild("Events"):WaitForChild("ZoneChangedEvent").OnClientEvent:Connect(function(zoneName)
+		zoneLabel.Text = "Zone: " .. zoneName
+	end)
+
 	update()
 end
 
@@ -644,15 +916,77 @@ return HUD
 ]]></string>
           </Properties>
         </Item>
+        <Item class="ModuleScript" referent="40">
+          <Properties>
+            <string name="Name">PetFollow</string>
+            <string name="Source"><![CDATA[local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local PetFollow = {}
+local activePets = {}
+
+function PetFollow.init()
+	local player = Players.LocalPlayer
+
+	RunService.RenderStepped:Connect(function()
+		local character = player.Character
+		if not character then return end
+		local rootPart = character:FindFirstChild("HumanoidRootPart")
+		if not rootPart then return end
+
+		for i, petModel in ipairs(activePets) do
+			local targetPos = rootPart.Position + Vector3.new(
+				math.sin(tick() + i) * 5,
+				2 + math.sin(tick() * 2 + i) * 0.5,
+				math.cos(tick() + i) * 5
+			)
+			petModel.CFrame = petModel.CFrame:Lerp(CFrame.new(targetPos, rootPart.Position), 0.1)
+		end
+	end)
+end
+
+function PetFollow.updatePets(pets)
+	-- Clear existing
+	for _, p in ipairs(activePets) do
+		p:Destroy()
+	end
+	activePets = {}
+
+	for _, petData in ipairs(pets) do
+		local part = Instance.new("Part")
+		part.Size = Vector3.new(2, 2, 2)
+		part.Anchored = true
+		part.CanCollide = false
+		part.Parent = workspace
+		part.Name = "Pet_" .. petData.Name
+
+		-- Simple visual based on rarity
+		if petData.Rarity == "Common" then
+			part.Color = Color3.fromRGB(200, 200, 200)
+		elseif petData.Rarity == "Legendary" then
+			part.Color = Color3.fromRGB(255, 215, 0)
+		else
+			part.Color = Color3.fromRGB(100, 200, 255)
+		end
+
+		table.insert(activePets, part)
+	end
+end
+
+return PetFollow
+]]></string>
+          </Properties>
+        </Item>
       </Item>
     </Item>
   </Item>
-  <Item class="Workspace" referent="33">
+  <Item class="Workspace" referent="41">
     <Properties>
       <string name="Name">Workspace</string>
       <bool name="NeedsPivotMigration">false</bool>
     </Properties>
-    <Item class="Part" referent="34">
+    <Item class="Part" referent="42">
       <Properties>
         <string name="Name">Baseplate</string>
         <bool name="Anchored">true</bool>
@@ -668,7 +1002,24 @@ return HUD
         </Vector3>
       </Properties>
     </Item>
-    <Item class="Part" referent="35">
+    <Item class="Part" referent="43">
+      <Properties>
+        <string name="Name">Gate</string>
+        <bool name="Anchored">true</bool>
+        <Vector3 name="Position">
+          <X>256</X>
+          <Y>25</Y>
+          <Z>0</Z>
+        </Vector3>
+        <Vector3 name="size">
+          <X>10</X>
+          <Y>50</Y>
+          <Z>100</Z>
+        </Vector3>
+        <float name="Transparency">0.5</float>
+      </Properties>
+    </Item>
+    <Item class="Part" referent="44">
       <Properties>
         <string name="Name">SellPart</string>
         <bool name="Anchored">true</bool>
@@ -681,6 +1032,23 @@ return HUD
           <X>10</X>
           <Y>1</Y>
           <Z>10</Z>
+        </Vector3>
+      </Properties>
+    </Item>
+    <Item class="Part" referent="45">
+      <Properties>
+        <string name="Name">Zone2</string>
+        <bool name="Anchored">true</bool>
+        <Color3uint8 name="Color3uint8">6513663</Color3uint8>
+        <Vector3 name="Position">
+          <X>550</X>
+          <Y>-1</Y>
+          <Z>0</Z>
+        </Vector3>
+        <Vector3 name="size">
+          <X>512</X>
+          <Y>2</Y>
+          <Z>512</Z>
         </Vector3>
       </Properties>
     </Item>

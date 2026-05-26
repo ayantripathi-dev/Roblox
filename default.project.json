@@ -19,6 +19,18 @@
         },
         "PetHatchEvent": {
           "$className": "RemoteEvent"
+        },
+        "UnlockZoneEvent": {
+          "$className": "RemoteEvent"
+        },
+        "ZoneChangedEvent": {
+          "$className": "RemoteEvent"
+        },
+        "PetEquippedEvent": {
+          "$className": "RemoteEvent"
+        },
+        "PowerGainedEvent": {
+          "$className": "RemoteEvent"
         }
       }
     },
@@ -49,6 +61,24 @@
           "Size": [10, 1, 10],
           "Position": [20, 0, 20],
           "Anchored": true
+        }
+      },
+      "Zone2": {
+        "$className": "Part",
+        "$properties": {
+          "Size": [512, 2, 512],
+          "Position": [550, -1, 0],
+          "Anchored": true,
+          "Color": [0.39, 0.39, 1]
+        }
+      },
+      "Gate": {
+        "$className": "Part",
+        "$properties": {
+          "Size": [10, 50, 100],
+          "Position": [256, 25, 0],
+          "Anchored": true,
+          "Transparency": 0.5
         }
       }
     },

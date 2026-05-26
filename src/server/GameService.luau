@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataManager = require(script.Parent.DataManager)
 local Leaderstats = require(script.Parent.Leaderstats)
 local PetService = require(script.Parent.PetService)
+local ZoneService = require(script.Parent.ZoneService)
 local Constants = require(ReplicatedStorage.Shared.Constants)
 local Upgrades = require(ReplicatedStorage.Shared.Upgrades)
 
@@ -12,11 +13,15 @@ function GameService.handleClick(player)
 	local upgradeLevel = (DataManager.get(player, "Upgrades") or {Power = 1}).Power
 	local upgradeMult = Upgrades.Power[upgradeLevel].Multiplier
 	local petMult = PetService.getEquippedMultiplier(player)
+	local zoneMult = ZoneService.getMultiplier(player)
 
-	local gain = Constants.CLICK_POWER_GAIN * (rebirths + 1) * upgradeMult * petMult
+	local gain = Constants.CLICK_POWER_GAIN * (rebirths + 1) * upgradeMult * petMult * zoneMult
 
-	DataManager.increment(player, "Power", math.floor(gain))
+	local amount = math.floor(gain)
+	DataManager.increment(player, "Power", amount)
 	Leaderstats.update(player, "Power", DataManager.get(player, "Power"))
+
+	ReplicatedStorage.Events.PowerGainedEvent:FireClient(player, amount)
 end
 
 function GameService.handleSell(player)
@@ -26,8 +31,9 @@ function GameService.handleSell(player)
 		local upgradeLevel = (DataManager.get(player, "Upgrades") or {Coins = 1}).Coins
 		local upgradeMult = Upgrades.Coins[upgradeLevel].Multiplier
 		local petMult = PetService.getEquippedMultiplier(player)
+		local zoneMult = ZoneService.getMultiplier(player)
 
-		local multiplier = upgradeMult * petMult
+		local multiplier = upgradeMult * petMult * zoneMult
 
 		local coinsGain = power * multiplier
 		DataManager.increment(player, "Coins", math.floor(coinsGain))
