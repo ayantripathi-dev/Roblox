@@ -1,43 +1,48 @@
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local DataManager = require(script.Parent.DataManager)
+--[[
+	Leaderstats
+	The classic Roblox player list stats. DataManager pushes values in after
+	every mutation, so this module stays dumb on purpose.
+]]
 
 local Leaderstats = {}
 
-function Leaderstats.initialize(player)
-	local data = DataManager.loadData(player)
-	if not data then
-		player:Kick("Data failed to load. Please rejoin.")
-		return
+local STATS = {
+	{ Key = "Coins", Name = "Coins" },
+	{ Key = "Power", Name = "Power" },
+	{ Key = "Rebirths", Name = "Rebirths" },
+	{ Key = "Pets", Name = "Pets" },
+}
+
+-- Creates the folder + IntValues. Safe to call twice.
+function Leaderstats.initialize(player: Player): Folder
+	local existing = player:FindFirstChild("leaderstats")
+	if existing then
+		return existing :: Folder
 	end
 
-	local leaderstats = Instance.new("Folder")
-	leaderstats.Name = "leaderstats"
-	leaderstats.Parent = player
+	local folder = Instance.new("Folder")
+	folder.Name = "leaderstats"
 
-	local coins = Instance.new("IntValue")
-	coins.Name = "Coins"
-	coins.Value = data.Coins
-	coins.Parent = leaderstats
+	for _, stat in ipairs(STATS) do
+		local value = Instance.new("IntValue")
+		value.Name = stat.Name
+		value.Value = 0
+		value.Parent = folder
+	end
 
-	local power = Instance.new("IntValue")
-	power.Name = "Power"
-	power.Value = data.Power
-	power.Parent = leaderstats
-
-	local rebirths = Instance.new("IntValue")
-	rebirths.Name = "Rebirths"
-	rebirths.Value = data.Rebirths
-	rebirths.Parent = leaderstats
+	folder.Parent = player
+	return folder
 end
 
-function Leaderstats.update(player, key, value)
-	local leaderstats = player:FindFirstChild("leaderstats")
-	if leaderstats then
-		local stat = leaderstats:FindFirstChild(key)
-		if stat then
-			stat.Value = value
-		end
+function Leaderstats.update(player: Player, key: string, value: number)
+	local folder = player:FindFirstChild("leaderstats")
+	if not folder then
+		return
+	end
+	local stat = folder:FindFirstChild(key)
+	if stat and stat:IsA("IntValue") then
+		-- IntValue is a 64 bit integer: clamp instead of overflowing.
+		stat.Value = math.clamp(math.floor(value or 0), -2147483647, 2147483647)
 	end
 end
 

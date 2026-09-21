@@ -1,0 +1,51 @@
+name: Luau tests
+
+# The game itself is Luau (Rojo), so there is nothing to npm-build: CI runs the
+# headless test suite, which also compiles every file in src/ as a syntax gate.
+#   - balance + data integrity (upgrade curves, egg odds, quests, codes)
+#   - icon registry integrity (every referenced icon exists and has a drawing)
+#   - an hour-long progression simulation
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: luau-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  LUNE_VERSION: 0.10.5
+
+jobs:
+  tests:
+    name: lune run tests/run.luau
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lune
+        run: |
+          set -euo pipefail
+          case "$(uname -m)" in
+            x86_64) ARCH=x86_64 ;;
+            aarch64|arm64) ARCH=aarch64 ;;
+            *) echo "unsupported architecture: $(uname -m)"; exit 1 ;;
+          esac
+          curl -sSL -o /tmp/lune.zip \
+            "https://github.com/lune-org/lune/releases/download/v${LUNE_VERSION}/lune-${LUNE_VERSION}-linux-${ARCH}.zip"
+          unzip -o /tmp/lune.zip -d "$HOME/.lune"
+          chmod +x "$HOME/.lune/lune"
+          echo "$HOME/.lune" >> "$GITHUB_PATH"
+
+      - name: Lune version
+        run: lune --version
+
+      - name: Run the test suite
+        run: lune run tests/run.luau

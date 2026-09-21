@@ -5,21 +5,6 @@
     "ReplicatedStorage": {
       "Shared": {
         "$path": "src/shared"
-      },
-      "Events": {
-        "$className": "Folder",
-        "ClickEvent": {
-          "$className": "RemoteEvent"
-        },
-        "RebirthEvent": {
-          "$className": "RemoteEvent"
-        },
-        "UpgradeEvent": {
-          "$className": "RemoteEvent"
-        },
-        "PetHatchEvent": {
-          "$className": "RemoteEvent"
-        }
       }
     },
     "ServerScriptService": {
@@ -40,50 +25,11 @@
         "$properties": {
           "Size": [512, 2, 512],
           "Position": [0, -1, 0],
-          "Anchored": true
-        }
-      },
-      "SellPart": {
-        "$className": "Part",
-        "$properties": {
-          "Size": [10, 1, 10],
-          "Position": [20, 0, 20],
-          "Anchored": true
-        }
-      }
-    },
-    "StarterGui": {
-      "MainHUD": {
-        "$className": "ScreenGui",
-        "HUDFrame": {
-          "$className": "Frame",
-          "PowerLabel": {
-            "$className": "TextLabel",
-            "$properties": { "Text": "Power: 0" }
-          },
-          "CoinsLabel": {
-            "$className": "TextLabel",
-            "$properties": { "Text": "Coins: 0" }
-          }
-        },
-        "Buttons": {
-          "$className": "Folder",
-          "ClickButton": {
-            "$className": "TextButton",
-            "$properties": { "Text": "CLICK ME!" }
-          },
-          "RebirthButton": {
-            "$className": "TextButton",
-            "$properties": { "Text": "REBIRTH" }
-          },
-          "UpgradeButton": {
-            "$className": "TextButton",
-            "$properties": { "Text": "UPGRADES" }
-          },
-          "PetButton": {
-            "$className": "TextButton",
-            "$properties": { "Text": "HATCH PET (500)" }
-          }
+          "Anchored": true,
+          "Material": "Slate",
+          "Color": [0.149, 0.172, 0.243],
+          "TopSurface": "Smooth",
+          "BottomSurface": "Smooth"
         }
       }
     }
